@@ -131,13 +131,9 @@ rebuild          --input in.jar --recovered recovered/ -o out.jar [--manifest ma
 
 ---
 
-## Documentation
+## USAGE
 
-- [ARCHITECTURE.md](docs/ARCHITECTURE.md) — Pipeline design, module boundaries, extension points
-- [ROADMAP.md](docs/ROADMAP.md) — Known limitations and planned work
-- [adding-obfuscator-profile.md](docs/adding-obfuscator-profile.md) — How to add a new obfuscator variant
-- [static-reverse-approach.md](docs/static-reverse-approach.md) — Deep-dive on the static analysis path
-- [manual-restoration.md](docs/manual-restoration.md) — Manual recovery techniques
+- [USAGE.md](USAGE.md)
 
 ---
 
