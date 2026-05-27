@@ -21,35 +21,6 @@ Both paths produce the same output format and can be combined — dynamic recove
 
 ---
 
-## What's New (Upgraded Version)
-
-### StackTracker — fewer stubs on the static path
-The Ghidra-path lifter now runs a Python `StackTracker` post-pass that maintains an operand-stack depth model after every emitted instruction. It inserts corrective placeholder pushes (`ACONST_NULL`, `ICONST_0`, etc.) before any instruction that would underflow the stack. This eliminates most "stack-imbalanced → stub" fallbacks that the previous version suffered, dramatically improving static-path coverage on real binaries. Disable with `--disable use_stack_tracker`.
-
-### AArch64 / ARM64 support
-`binary_introspect` now includes an AArch64 (AAPCS64) ABI module (`arch/aarch64_sysv.py`) supporting:
-- Android `arm64-v8a` `.so` libraries
-- Linux AArch64 and Apple Silicon macOS binaries
-- ADRP + ADD / LDR two-instruction PC-relative addressing
-- `LDR + BLR` indirect vtable call pattern
-
-Previously only `amd64-windows` and `amd64-sysv` were supported.
-
-### Multi-run trace merging
-Supply `--run-cmd` multiple times to run the target with different inputs and merge all resulting traces for better branch coverage. `bind` events are deduplicated; `enter`/`exit` events accumulate across all runs.
-
-### HTML recovery report
-Pass `--report report.html` to generate a self-contained, interactive HTML report showing overall recovery rate, per-class breakdown, lifter warnings per method, and a confidence badge per method.
-
-### Schema version enforcement
-Every pipeline stage now validates the `schemaVersion` of its inputs. Version mismatches produce a clear warning instead of silently producing wrong output. Opt out with `--no-validate-schemas`.
-
-### Docker CI for Ghidra
-`docker/Dockerfile.ci` and `docker/docker-compose.ci.yml` containerise the Ghidra headless invocation so static-path e2e tests can run in CI without a host Ghidra installation.
-
-### Ghidra-free unit tests
-`tests/unit/test_nativelift.py` + `tests/fixtures/ghidra-dump-snake.json` let the AST-matcher half of the pipeline be tested without re-running Ghidra.
-
 ---
 
 ---
