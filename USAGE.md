@@ -1,4 +1,4 @@
-# NativeLift — Step-by-Step Usage Guide
+# NativeLift — Usage Guide
 
 This guide walks through every way to use NativeLift, from first-time setup to advanced workflows.
 
