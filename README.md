@@ -31,19 +31,19 @@ The pipeline is composed of independent stages, each consuming and producing ver
 
 ```
 in.jar ──┬──▶ jar-parser ──▶ classes.json ────────────────┐
-         │                                                 │
-.dll/.so ┴──▶ binary-introspect ──▶ binary.json ──────────▼
-                                               manifest-merge ──▶ manifest.json
-                                                       │
+         │                                                     │
+.dll/.so ┴──▶ binary-introspect ──▶ binary.json ────────── ▼
+                                                         manifest-merge ──▶ manifest.jso
+                                                             │
                         ┌──────────────────────────────┴──────────────────────────────┐
-                        │ Dynamic path                              Static path        │
-                        ▼                                                              ▼
-              JVMTI agent (native/)                              Ghidra headless
-              → trace.jsonl                                      → ghidra-dump.json
-                        │                                                              │
-                        ▼                                                              ▼
-              trace-to-bytecode                                 ast-matcher
-                        │                                                              │
+                        │ Dynamic path                                        Static path        │
+                        ▼                                                                       ▼
+              JVMTI agent (native/)                                                      Ghidra headless
+              → trace.jsonl                                                           → ghidra-dump.json
+                        │                                                                       │
+                        ▼                                                                      ▼
+              trace-to-bytecode                                                          ast-matcher
+                        │                                                                      │
                         └────────────────── recovered/*.json ──────────────────────────┘
                                                     │
                                                     ▼
