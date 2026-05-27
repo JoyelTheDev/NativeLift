@@ -1,7 +1,5 @@
 # NativeLift
 
-> Formerly `c2j-native-deobfuscator`
-
 **NativeLift** reverse-engineers JNI-native-obfuscated JARs back into readable Java bytecode. It targets [`native-obfuscator`](https://github.com/radioegor146/native-obfuscator) and its derivatives (e.g. j2cc) — anything that transpiles JVM bytecode to C++ then re-invokes Java through the JNI from a packaged `.dll` / `.so`.
 
 License: **GPLv3**
