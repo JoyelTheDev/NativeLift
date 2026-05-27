@@ -19,40 +19,40 @@ How `c2j-native-deobfuscator` is structured, and where to plug things in.
 
 ```
                  ┌────────────────────────────┐
-   in.jar  ──┬──▶│ jar-parser                 │── classes.json ─────┐
-             │   └────────────────────────────┘                     │
-             │   ┌────────────────────────────┐                     │
-   .dll/.so ─┴──▶│ binary-introspect          │── binary.json ──────┤
-                 │  + arch/ + profile/        │                     │
-                 │  + jni_tables.py           │                     │
-                 └────────────────────────────┘                     │
-                                                                    ▼
+   in.jar ──┬──>│ jar-parser                      │── classes.json ─────┐
+             │   └────────────────────────────┘                      │
+             │   ┌────────────────────────────┐                      │
+   .dll/.so ─┴──▶│ binary-introspect              │── binary.json ──────┤
+                 │  + arch/ + profile/             │                       │
+                 │  + jni_tables.py                │                       │
+                 └────────────────────────────┘                       │
+                                                                           ▼
                                               ┌──────────────────────────┐
-                                              │ manifest-merge           │
+                                              │ manifest-merge                │
                                               └──────────────────────────┘
-                                                            │
-                                                            │ manifest.json
+                                                                 │
+                                                                 │ manifest.json
                                 ┌───────────────────────────┴───────────────────────────┐
-                                │                                                       │
-                                ▼ Dynamic path                          Static path     ▼
+                                │                                                                 │
+                                ▼ Dynamic path                          Static path              ▼
               ┌────────────────────────────┐                       ┌─────────────────────────────┐
-              │ JVMTI agent (native/)      │                       │ Ghidra headless             │
-              │  hooks RegisterNatives +   │                       │   ExtractRegisterNatives    │
-              │  every key JNI fn          │                       │   DumpFromManifest          │
+              │ JVMTI agent (native/)           │                       │   Ghidra headless                │
+              │  hooks RegisterNatives +        │                       │   ExtractRegisterNatives         │
+              │  every key JNI fn               │                       │   DumpFromManifest               │
               └────────────────────────────┘                       └─────────────────────────────┘
                           │                                                            │
                           │ trace.jsonl                                                │ ghidra-dump.json
                           ▼                                                            ▼
               ┌────────────────────────────┐                       ┌─────────────────────────────┐
-              │ trace-to-bytecode          │                       │ ast-matcher                 │
-              │  (Kotlin/ASM lifter)       │                       │  (Python tree-sitter + lifter)
+              │ trace-to-bytecode               │                       │ ast-matcher                      │
+              │  (Kotlin/ASM lifter)            │                       │  (Python tree-sitter + lifter).  |
               └────────────────────────────┘                       └─────────────────────────────┘
-                          │                                                            │
-                          └──────────────┬──── recovered/*.json ────────────────┬──────┘
-                                         ▼                                      ▼
+                          │                                                                   │
+                          └──────────────┬──── recovered/*.json ────────────────┬──────
+                                            ▼                                         ▼
                                 ┌──────────────────────────────────────────────────────┐
-                                │ class-rebuilder                                      │
-                                │  replaces native stubs, strips loader + native blob  │
+                                │ class-rebuilder                                                │
+                                │  replaces native stubs, strips loader + native blob            │
                                 └──────────────────────────────────────────────────────┘
                                                        │
                                                        ▼
