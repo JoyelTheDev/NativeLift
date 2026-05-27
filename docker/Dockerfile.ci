@@ -1,0 +1,71 @@
+# NativeLift CI image
+# Provides:
+#   - OpenJDK 21 (JVM module build + Ghidra runtime)
+#   - Python 3.11 + uv (Python module build)
+#   - Ghidra 11.x headless (static-path decompilation)
+#   - zig 0.16+ (native JVMTI agent build)
+#
+# Usage:
+#   docker build -t nativelift-ci -f docker/Dockerfile.ci .
+#   docker run --rm -v $(pwd):/workspace nativelift-ci bash tests/e2e/test_pipeline.sh
+#
+# The image intentionally does NOT embed a license key or project db —
+# those are mounted at runtime via -v flags or environment variables.
+
+FROM ubuntu:24.04
+
+ARG GHIDRA_VERSION=11.3.2
+ARG GHIDRA_SHA256=b8a7e467ca6b1bfdd4f6ba8e0af48b6dc8d6fa74e12f45c1d6e8d28e8cba4d96
+ARG ZIG_VERSION=0.14.0
+ARG ZIG_SHA256=d0fca787f3b7d5b3b2688e9441c4fc38f61a4de7f32edbda08083b4b6e69da8d
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# ---- Base toolchain ----
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        openjdk-21-jdk-headless \
+        python3.11 python3.11-venv python3-pip \
+        curl wget unzip xz-utils git ca-certificates \
+        libfontconfig1 \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+ENV PATH="$JAVA_HOME/bin:$PATH"
+
+# ---- uv (fast Python package manager) ----
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:$PATH"
+
+# ---- Ghidra headless ----
+RUN mkdir -p /opt/ghidra && \
+    wget -q "https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_${GHIDRA_VERSION}_build/ghidra_${GHIDRA_VERSION}_PUBLIC_$(date +%Y%m%d).zip" \
+         -O /tmp/ghidra.zip 2>/dev/null || \
+    wget -q "https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_${GHIDRA_VERSION}_build/ghidra_${GHIDRA_VERSION}_PUBLIC.zip" \
+         -O /tmp/ghidra.zip && \
+    unzip -q /tmp/ghidra.zip -d /opt && \
+    mv /opt/ghidra_${GHIDRA_VERSION}_PUBLIC /opt/ghidra/current && \
+    rm /tmp/ghidra.zip
+
+ENV GHIDRA_HOME=/opt/ghidra/current
+ENV PATH="$GHIDRA_HOME/support:$PATH"
+
+# ---- zig (native agent build) ----
+RUN wget -q "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" \
+         -O /tmp/zig.tar.xz && \
+    tar -xf /tmp/zig.tar.xz -C /opt && \
+    ln -s /opt/zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/zig && \
+    rm /tmp/zig.tar.xz
+
+# ---- Python deps pre-warm ----
+WORKDIR /workspace
+COPY py/pyproject.toml py/pyproject.toml
+RUN cd py && uv sync --all-packages 2>/dev/null || true
+
+# ---- Gradle wrapper cache ----
+COPY jvm/ jvm/
+RUN cd jvm && ./gradlew --no-daemon dependencies --quiet 2>/dev/null || true
+
+# ---- Default workspace mount point ----
+VOLUME ["/workspace"]
+
+CMD ["bash"]

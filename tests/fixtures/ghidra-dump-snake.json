@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "binaryPath": "fixture-snake.so",
+  "functions": [
+    {
+      "addr": "0x10000",
+      "owner": "Snake",
+      "methodName": "getScore",
+      "methodDesc": "()I",
+      "code": "int getScore(JNIEnv *env, jobject this) {\n  jclass cls = env->FindClass(\"Snake\");\n  jfieldID fid = env->GetFieldID(cls, \"score\", \"I\");\n  jint score = env->GetIntField(this, fid);\n  return score;\n}\n"
+    },
+    {
+      "addr": "0x10100",
+      "owner": "Snake",
+      "methodName": "move",
+      "methodDesc": "(I)V",
+      "code": "void move(JNIEnv *env, jobject this, jint direction) {\n  jclass cls = env->FindClass(\"Snake\");\n  jmethodID mid = env->GetMethodID(cls, \"updatePosition\", \"(I)V\");\n  env->CallVoidMethod(this, mid, direction);\n  return;\n}\n"
+    },
+    {
+      "addr": "0x10200",
+      "owner": "Board",
+      "methodName": "reset",
+      "methodDesc": "()V",
+      "code": "void reset(JNIEnv *env, jobject this) {\n  jclass cls = env->FindClass(\"Board\");\n  jfieldID fid = env->GetFieldID(cls, \"cells\", \"[[I\");\n  jint rows = 10;\n  jint cols = 10;\n  jobjectArray arr = env->NewObjectArray(rows, env->FindClass(\"[I\"), 0);\n  env->SetObjectField(this, fid, arr);\n  return;\n}\n"
+    }
+  ]
+}

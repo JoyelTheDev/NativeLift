@@ -1,0 +1,39 @@
+version: "3.9"
+
+# NativeLift CI compose file.
+# Run the full e2e pipeline inside the CI image:
+#
+#   docker compose -f docker/docker-compose.ci.yml run --rm e2e
+#
+# The host project root is mounted read-only at /workspace; the workdir
+# for intermediate artifacts is a named volume so large files don't cross
+# the bind-mount boundary on every run.
+
+services:
+  e2e:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.ci
+    volumes:
+      - ..:/workspace:ro
+      - nativelift_work:/tmp/nativelift-ci
+    working_dir: /workspace
+    environment:
+      - NATIVELIFT_WORKDIR=/tmp/nativelift-ci
+      - GHIDRA_HOME=/opt/ghidra/current
+      - JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+    command: >
+      bash -c "
+        set -euo pipefail &&
+        echo '=== build JVM modules ===' &&
+        (cd jvm && ./gradlew installDist --no-daemon) &&
+        echo '=== sync Python workspace ===' &&
+        (cd py && uv sync --all-packages) &&
+        echo '=== build native agent ===' &&
+        (cd native && JDK_HOME=\"$$JAVA_HOME\" bash build.sh) &&
+        echo '=== run e2e tests ===' &&
+        bash tests/e2e/test_pipeline.sh
+      "
+
+volumes:
+  nativelift_work:
